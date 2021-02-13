@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.5/socket.io.js" integrity="sha512-2rUSTSAeOO02jF6eBqENNqPs1EohenJ5j+1dgDPdXSLz9nOlrr8DJk4zW/lDy8rjhGCSonW3Gx812XJQIKZKJQ==" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="style.css">
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Websockets</title>
+</head>
+<body>
+    <div class="start-container">
+        <!-- learn how to centre text placeholder in an input -->
+        <input type="text" id='name' placeholder="        N a m e" />   
+        <button id='start-btn'>Click to play!</button>
+    </div>
+
+   
+    <div id="blackjack-table">
+        <div class="hand" id="opponent"></div>
+
+        <div class="hand" id="player"></div> 
+
+        <section id="my-score"> score is:  21</section>
+    </div>
+
+    <div id="options" class="hidden">
+        <button class="stick-twist" id='stick'> <h4>Stick</h4></button>
+        <button class="stick-twist" id="twist"> <h4>Twist</h4></button>
+    </div>   
+
+    <div id="mario-chat">
+        <div id="chat-window">
+            <div id="output"></div>
+            <div id="feedback">
+            </div>        
+        </div>
+    
+        <input type="text" id="message" placeholder="type message here">
+        <button id="send">Send</button>
+    </div>
+
+    <script src="chat.js"></script>
+</body>
+</html>

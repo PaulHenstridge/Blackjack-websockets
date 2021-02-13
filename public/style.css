@@ -1,0 +1,166 @@
+body{
+    font-family: 'Nunito';
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+}
+
+.start-container {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+}
+
+#start-btn {
+
+    width: 150px;
+    height: 90px;
+    background-color: red;
+    border-radius: 15%;
+    border: 3px solid black;
+}
+
+#name {
+    opacity: 0.5;
+    border-radius: 15%;
+    background-color: lightblue;
+    border: 2px solid rgb(112, 112, 221);
+    width: 150px;
+    height: 30px;
+}
+
+#mario-chat{
+    height: 50vh;
+    width: 75vw;
+    margin: 30px auto;
+    border: 1px solid #ddd;
+    box-shadow: 1px 3px 5px rgba(0,0,0,0.05);
+    border-radius: 2px;
+}
+
+#chat-window{
+    height: 30vh;
+    overflow: auto;
+    background: #f9f9f9;
+}
+
+
+#output p{
+    padding: 14px 0px;
+    margin: 0 20px;
+    border-bottom: 1px solid #e9e9e9;
+    color: #555;
+}
+
+#feedback p{
+    color: #aaa;
+    padding: 14px 0px;
+    margin: 0 20px;
+}
+
+#output strong{
+    color: #575ed8;
+}
+
+label{
+    box-sizing: border-box;
+    display: block;
+    padding: 10px 20px;
+}
+
+input{
+    padding: 10px 20px;
+    box-sizing: border-box;
+    background: #eee;
+    border: 0;
+    display: block;
+    width: 100%;
+    background: #fff;
+    border-bottom: 1px solid #eee;
+    font-family: Nunito;
+    font-size: 16px;
+}
+
+button{
+    background: #575ed8;
+    color: #fff;
+    font-size: 18px;
+    border: 0;
+    padding: 12px 0;
+    width: 100%;
+    border-radius: 0 0 2px 2px;
+}
+
+/* blackjack styling */
+
+#blackjack-table {
+    width: 90vw;
+    height: 40vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+    border: 2px solid black;
+
+}
+
+.hand {
+    width: 75%;
+    height: 30%;
+    background-color: rgb(84, 65, 155);
+    border: 3px solid rgb(218, 188, 23);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.card {
+    width: 8%;
+    height: 90%;
+    
+}
+
+#opponent .card {
+    background-color: black;
+}
+
+#player .card {
+    background-color: sandybrown;
+}
+
+
+
+
+
+.stick-twist {
+
+    display: flex;
+    flex-direction: column;
+    justify-content:center;
+    align-items: center;
+    width: 120px;
+    height: 60px;
+    background-color: rgb(112, 150, 207);
+    border-radius: 16%;
+    border: 3px solid black;
+}
+
+#stick {
+    position: absolute;
+    top: 35vh;
+    left: 2px;
+}
+
+#twist {
+    position: absolute;
+    top: 35vh;
+    right: 2px;
+}
+
+
+
+
+.hidden {
+    display: none;
+}
