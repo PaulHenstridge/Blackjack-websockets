@@ -1,3 +1,5 @@
+
+
 // Make connection
 const socket = io.connect('http://localhost:4000')
 
@@ -18,7 +20,7 @@ const playerCards = document.querySelector('#player')
 const options = document.querySelector('#options')
 const stick = document.querySelector('#stick')
 const twist = document.querySelector('#twist')
-
+const playAgain = document.querySelector('#playAgain')
 
 
 
@@ -63,7 +65,7 @@ start.addEventListener('click', () => {
         
         nameInput.classList.add('hidden')
 
-        score.innerText = 'waiting for other player to start...'
+        score.innerText = 'waiting to begin...'
 
     }, 500)
 
@@ -71,6 +73,7 @@ start.addEventListener('click', () => {
 
     playerName = nameInput.value
     socket.emit('start', { playerName })
+    console.log('START BUTTON start EVENT')
 
 })
 
@@ -82,6 +85,8 @@ socket.on('waiting', data => {
 
 socket.on('begin', data => {
     console.log(data)
+    playerCards.innerHTML = ''
+    opponentCards.innerHTML = ''
     score.innerText = `Lets Play Blackjack!`
       setTimeout( () => {
             dealCards(data)
@@ -207,7 +212,7 @@ stick.addEventListener( 'click', () => {
     // hide stick/twist buttons
     setTimeout( () => {
         options.classList.add('hidden')
-    },500)
+    },200)
 })
 
 // handling a received stick event
@@ -220,16 +225,48 @@ stick.addEventListener( 'click', () => {
         }
     })
 
+    playAgain.addEventListener('click', () => {
+        // switch 'dealer' for clicking player
+        dealer ? !dealer : dealer
+        socket.emit('playAgain',{})
+        setTimeout( () => {
+            playAgain.classList.add('hidden')
+        },250)
+    })
+
     socket.on('gameOver', data => {
         console.log(data)
-        let winMessage = `
-        ${data.scores[0].playerName} scored ${data.scores[0].currentScore},
-        ${data.scores[1].playerName} scored ${data.scores[1].currentScore}.
-        ${data.winner} is the winner!
-        `
+        setTimeout( () => {
+            let winMessage = `
+                ${data.scores[0].playerName} scored ${data.scores[0].currentScore},
+                ${data.scores[1].playerName} scored ${data.scores[1].currentScore}.
+                ${data.winner} 
+                `
+            score.innerText = winMessage
+        },1000)
+        
 
-        score.innerText = winMessage
+        setTimeout( () => {
+        playAgain.classList.remove('hidden')
+        },3000)
+
+
+
+        // restart the game options
+        // turn should switch to other player.
+            // cheat option : let first to click be dealer again  <-- no
+        // reset all things like hands, active players, stickingPlayers
+            // think about where to set them,  global, or on each new begin event
     })
       
+socket.on('reset', data => {
+    currentScore = 0
+    playAgain.classList.add('hidden')
 
+    // switch 'dealer' for non-clicking player
+    dealer ? !dealer : dealer
+    console.log('PLAY AGAIN start EVENT')
+    socket.emit('start', { playerName })
+
+})
 

@@ -1,5 +1,7 @@
 body{
     font-family: 'Nunito';
+    background-color: black;
+    color: white;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -40,9 +42,9 @@ body{
 }
 
 #chat-window{
-    height: 30vh;
+    height: 35vh;
     overflow: auto;
-    background: #f9f9f9;
+    background: #bfb0dd;
 }
 
 
@@ -83,7 +85,7 @@ input{
 }
 
 button{
-    background: #575ed8;
+    background: rgb(84, 65, 155);
     color: #fff;
     font-size: 18px;
     border: 0;
@@ -156,6 +158,12 @@ button{
     position: absolute;
     top: 35vh;
     right: 2px;
+}
+
+#restart {
+    position: absolute;
+    top: 20vh;
+    left: 40vw;
 }
 
 

@@ -68,6 +68,7 @@ io.on('connection', socket => {
             getCard(dealerHand)
             getCard(playerHand)
             getCard(dealerHand)
+            console.log('4 cards dealt')
 
             io.sockets.emit('begin', {playerHand, dealerHand} )
         }
@@ -92,11 +93,11 @@ io.on('connection', socket => {
 
 
         function pickWinner(stickingPlayers) {
-            if (stickingPlayers[0].currentScore > stickingPlayers[1].currentScore) return stickingPlayers[0].playerName
+            if (stickingPlayers[0].currentScore > stickingPlayers[1].currentScore) return `The winner is ${stickingPlayers[0].playerName}`
             if (stickingPlayers[0].currentScore === stickingPlayers[1].currentScore) {
                return "it's a tie!" 
             } else { 
-                return stickingPlayers[1].playerName
+                return `The winner is ${stickingPlayers[1].playerName}`
             }
         }  
         
@@ -119,7 +120,12 @@ io.on('connection', socket => {
             // change dealer, reveal 'play again?' button
             // if pressed, send a begin event.
         
-      
+    socket.on('playAgain', data => {
+        dealerHand = []
+        playerHand = []
+        stickingPlayers = []
+        socket.broadcast.emit('reset', {})
+    })  
     
    
 
