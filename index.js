@@ -93,11 +93,11 @@ io.on('connection', socket => {
 
 
         function pickWinner(stickingPlayers) {
-            if (stickingPlayers[0].currentScore > stickingPlayers[1].currentScore) return `The winner is ${stickingPlayers[0].playerName}`
+            if (stickingPlayers[0].currentScore > stickingPlayers[1].currentScore) return stickingPlayers[0].playerName
             if (stickingPlayers[0].currentScore === stickingPlayers[1].currentScore) {
-               return "it's a tie!" 
+               return 'Tie'
             } else { 
-                return `The winner is ${stickingPlayers[1].playerName}`
+                return stickingPlayers[1].playerName
             }
         }  
         

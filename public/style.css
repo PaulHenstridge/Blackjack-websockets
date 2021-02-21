@@ -1,6 +1,6 @@
 body{
     font-family: 'Nunito';
-    background-color: black;
+    background-color: rgb(3, 5, 27);
     color: white;
     display: flex;
     flex-direction: column;
@@ -118,17 +118,19 @@ button{
 }
 
 .card {
-    width: 8%;
+    width: 40px;
     height: 90%;
+    background-size: contain;
+    background-repeat:no-repeat;
     
 }
 
 #opponent .card {
-    background-color: black;
+    background-image: url('cards/blue_back.png');
 }
 
 #player .card {
-    background-color: sandybrown;
+   
 }
 
 
@@ -166,6 +168,12 @@ button{
     left: 40vw;
 }
 
+.info-container {
+    width: 50%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
 
 
 

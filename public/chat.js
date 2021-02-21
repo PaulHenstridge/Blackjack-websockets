@@ -14,7 +14,9 @@ const feedback = document.querySelector('#feedback')
     //blackjack
 const start = document.querySelector('#start-btn')
 const nameInput = document.querySelector('#name')
-const score = document.querySelector('#my-score')
+const gameInfo = document.querySelector('#game-info')
+const myScore = document.querySelector('#my-score')
+const oppScore = document.querySelector('#opp-score')
 const opponentCards = document.querySelector('#opponent')
 const playerCards = document.querySelector('#player')
 const options = document.querySelector('#options')
@@ -65,7 +67,7 @@ start.addEventListener('click', () => {
         
         nameInput.classList.add('hidden')
 
-        score.innerText = 'waiting to begin...'
+        gameInfo.innerText = 'waiting to begin...'
 
     }, 500)
 
@@ -73,13 +75,11 @@ start.addEventListener('click', () => {
 
     playerName = nameInput.value
     socket.emit('start', { playerName })
-    console.log('START BUTTON start EVENT')
-
 })
 
 // handle start event responses from server
 socket.on('waiting', data => {
-        score.innerText = `${data.opponent} is ready to play!`
+        gameInfo.innerText = `${data.opponent} is ready to play!`
         dealer = false
 })
 
@@ -87,7 +87,7 @@ socket.on('begin', data => {
     console.log(data)
     playerCards.innerHTML = ''
     opponentCards.innerHTML = ''
-    score.innerText = `Lets Play Blackjack!`
+    gameInfo.innerText = `Lets Play Blackjack!`
       setTimeout( () => {
             dealCards(data)
         },1000)
@@ -98,12 +98,8 @@ socket.on('begin', data => {
         },2500)
         }
        
-        // another delay, then if dealer unhide stick/twist buttons. message for other player e.g. player name's turn
-        // twist can be handled by browser
-             
-
-
-
+        // if dealer unhide stick/twist buttons. 
+        // message for other player e.g. player name's turn ??
         //stick triggers an event to server
             // on stick event server sends a endTurn event that gives stick/twist options to other player
             // and displays a message to the first player
@@ -112,7 +108,7 @@ socket.on('begin', data => {
 function createCard(cardData) {
     let card = document.createElement('div')
         card.classList.add('card')
-        card.innerText = cardData
+        card.style.backgroundImage = `url(cards/${cardData}.png)`
         return card
 }
 
@@ -123,7 +119,7 @@ function dealCards(data) {
 
     if (dealer) {
         for (i=0;i<2;i++){          
-            opponentCards.appendChild(createCard(data.playerHand[i]))
+            opponentCards.appendChild(createCard('blue_back'))
             playerCards.appendChild(createCard(data.dealerHand[i]))
         }
         currentScore = parseInt(data.dealerHand[0].replace(/\D/g, ""))
@@ -132,12 +128,12 @@ function dealCards(data) {
     } else {
         for (i=0;i<2;i++){
             playerCards.appendChild(createCard(data.playerHand[i]))
-            opponentCards.appendChild(createCard(data.dealerHand[i]))
+            opponentCards.appendChild(createCard('blue_back'))
         }
         currentScore = parseInt(data.playerHand[0].replace(/\D/g, "")) 
         + parseInt(data.playerHand[1] .replace(/\D/g, ""))
     }
-    score.innerText = `your score: ${currentScore}`
+    gameInfo.innerText = `your score: ${currentScore}`
 }
 
 // stick or twist logic
@@ -167,7 +163,7 @@ socket.on('twist', data => {
         let cardVal = parseInt(data.twistCard[0].replace(/\D/g, ""))
 
         currentScore += cardVal
-        score.innerText = `Your Score: ${currentScore}`
+        gameInfo.innerText = `Your Score: ${currentScore}`
 
 // separate win/lose conditions to another fuction bcs will have to be called a lot
 // need to run on first deal as well as each twist
@@ -199,9 +195,13 @@ socket.on('twist', data => {
             opponentWins++
             // game restarts
         }
-
-
     }
+
+    if (data.playerName !== playerName) {
+        let newCard = createCard('blue_back')
+        opponentCards.appendChild(newCard)
+    }
+
 })
 
 // send stick event to server with name, score
@@ -240,9 +240,16 @@ stick.addEventListener( 'click', () => {
             let winMessage = `
                 ${data.scores[0].playerName} scored ${data.scores[0].currentScore},
                 ${data.scores[1].playerName} scored ${data.scores[1].currentScore}.
-                ${data.winner} 
+                Winner : ${data.winner} 
                 `
-            score.innerText = winMessage
+            // increment overall scores
+            data.winner === playerName ? playerWins++ : opponentWins++
+            
+            gameInfo.innerText = winMessage
+
+            myScore.innerText = playerWins
+            oppScore.innerText = opponentWins
+
         },1000)
         
 
@@ -265,8 +272,8 @@ socket.on('reset', data => {
 
     // switch 'dealer' for non-clicking player
     dealer ? !dealer : dealer
-    console.log('PLAY AGAIN start EVENT')
     socket.emit('start', { playerName })
-
 })
+
+
 
