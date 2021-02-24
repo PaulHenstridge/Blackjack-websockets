@@ -168,6 +168,12 @@ button{
     left: 40vw;
 }
 
+#stand-up {
+    height: 30px;
+    border-radius: 23%;
+    background-color: red;
+}
+
 .info-container {
     width: 50%;
     display: flex;

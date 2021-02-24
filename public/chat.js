@@ -22,7 +22,9 @@ const playerCards = document.querySelector('#player')
 const options = document.querySelector('#options')
 const stick = document.querySelector('#stick')
 const twist = document.querySelector('#twist')
-const playAgain = document.querySelector('#playAgain')
+const playAgain = document.querySelector('#play-again')
+const standUp = document.querySelector('#stand-up')
+const endOptions = document.querySelector('.end-options')
 
 
 
@@ -65,7 +67,7 @@ start.addEventListener('click', () => {
     setTimeout( () => {
         start.classList.add('hidden')
         
-        nameInput.classList.add('hidden')
+        //nameInput.classList.add('hidden')   keep so non players can add name to chat?
 
         gameInfo.innerText = 'waiting to begin...'
 
@@ -88,22 +90,20 @@ socket.on('begin', data => {
     playerCards.innerHTML = ''
     opponentCards.innerHTML = ''
     gameInfo.innerText = `Lets Play Blackjack!`
-      setTimeout( () => {
-            dealCards(data)
-        },1000)
-
-        if (dealer) {
-             setTimeout( () => {
-            options.classList.remove('hidden')
-        },2500)
-        }
-       
-        // if dealer unhide stick/twist buttons. 
-        // message for other player e.g. player name's turn ??
-        //stick triggers an event to server
-            // on stick event server sends a endTurn event that gives stick/twist options to other player
-            // and displays a message to the first player
-})
+// deal the cards
+    setTimeout(() => { dealCards(data) },1000)
+    
+    if (playerName === data.activePlayers[0] || playerName === data.activePlayers[1]){
+            if (dealer) {
+                setTimeout( () => {
+                options.classList.remove('hidden')
+            },2500)
+            }
+    } else {
+        start.classList.add('hidden')
+    }
+    // if not an active player, hide start button
+})   
 
 function createCard(cardData) {
     let card = document.createElement('div')
@@ -216,64 +216,89 @@ stick.addEventListener( 'click', () => {
 })
 
 // handling a received stick event
-    socket.on('stick', data => {
-        if ( data.playerName !== playerName) {  // should I transmit form the server to avoid this check?  think about adapting for multiplayer!
-                                                // name of transmitted even can be diferent e.g. oppStick...?
-            // unhide stick/twist buttions
-            options.classList.remove('hidden')
-            
-        }
-    })
-
-    playAgain.addEventListener('click', () => {
-        // switch 'dealer' for clicking player
-        dealer ? !dealer : dealer
-        socket.emit('playAgain',{})
-        setTimeout( () => {
-            playAgain.classList.add('hidden')
-        },250)
-    })
-
-    socket.on('gameOver', data => {
-        console.log(data)
-        setTimeout( () => {
-            let winMessage = `
-                ${data.scores[0].playerName} scored ${data.scores[0].currentScore},
-                ${data.scores[1].playerName} scored ${data.scores[1].currentScore}.
-                Winner : ${data.winner} 
-                `
-            // increment overall scores
-            data.winner === playerName ? playerWins++ : opponentWins++
-            
-            gameInfo.innerText = winMessage
-
-            myScore.innerText = playerWins
-            oppScore.innerText = opponentWins
-
-        },1000)
+socket.on('stick', data => {
+    if ( (playerName === data.activePlayers[0] || playerName === data.activePlayers[1]) && data.stickingPlayer !== playerName) {  
+        // unhide stick/twist buttions
+        options.classList.remove('hidden')
         
-
-        setTimeout( () => {
-        playAgain.classList.remove('hidden')
-        },3000)
-
-
-
-        // restart the game options
-        // turn should switch to other player.
-            // cheat option : let first to click be dealer again  <-- no
-        // reset all things like hands, active players, stickingPlayers
-            // think about where to set them,  global, or on each new begin event
-    })
-      
-socket.on('reset', data => {
-    currentScore = 0
-    playAgain.classList.add('hidden')
-
-    // switch 'dealer' for non-clicking player
-    dealer ? !dealer : dealer
-    socket.emit('start', { playerName })
+    }
 })
 
+playAgain.addEventListener('click', () => {
+    socket.emit('playAgain',{ playerName })
+    setTimeout( () => {
+        endOptions.classList.add('hidden')
+    },250)
+})
+
+socket.on('gameOver', data => {
+    console.log(data)
+    setTimeout( () => {
+        let winMessage = `
+            ${data.scores[0].playerName} scored ${data.scores[0].currentScore},
+            ${data.scores[1].playerName} scored ${data.scores[1].currentScore}.
+            Winner : ${data.winner} 
+            `
+        // increment overall scores  - not working currently
+        data.winner === playerName ? playerWins++ : opponentWins++
+        
+        gameInfo.innerText = winMessage
+
+        myScore.innerText = playerWins
+        oppScore.innerText = opponentWins
+
+    },1000)
+    
+
+    setTimeout( () => {
+    endOptions.classList.remove('hidden')
+    },3000)
+
+
+
+    // restart the game options
+    // turn should switch to other player.
+        // cheat option : let first to click be dealer again  <-- no
+    // reset all things like hands, active players, stickingPlayers
+        // think about where to set them,  global, or on each new begin event
+})
+      
+//  problem with the start event being fired more than once, resulting in more than 2 cards dealt.
+// need to identify where the calls are coming form and why.
+
+
+socket.on('reset', data => {
+    currentScore = 0
+    endOptions.classList.add('hidden')
+
+    // switch 'dealer' 
+    if(playerName === data.activePlayers[0] || playerName === data.activePlayers[1]){
+        dealer ? !dealer : dealer
+    }
+    
+    if ( playerName === data.restartingPlayer) {
+         socket.emit('start', { playerName })
+    }
+})
+
+standUp.addEventListener('click', () => {
+    socket.emit('standUp', { playerName })
+    endOptions.classList.add('hidden')
+})
+
+socket.on('stoodUp', data => {
+    if (data.sittingPlayer === playerName) {
+        gameInfo.innerText = `
+        ${data.standingPlayer} has stood up.
+        Waiting for new player to sit.
+        `
+    } else {
+        gameInfo.innerText = `
+        ${data.standingPlayer} has stood up.
+        Click start to sit!
+        `
+        start.classList.remove('hidden')
+    }
+})
 
 

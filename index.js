@@ -3,7 +3,10 @@ const socket = require('socket.io')
 
 // App setup
 const app = express()
-const server = app.listen(4000, () => {
+
+const port = process.env.PORT || 4000
+
+const server = app.listen(port, () => {
     console.log('server running')
 })
 
@@ -20,7 +23,7 @@ app.use(function (req, res, next) {
 const io = socket(server)
 
 
-const activePlayers = []
+let activePlayers = []
 
 let dealerHand = []
 let playerHand = []
@@ -56,12 +59,16 @@ io.on('connection', socket => {
 
     socket.on ('start', data => {
         console.log(data.playerName)
-        activePlayers.push(data.playerName) 
+        if (activePlayers.length <2) {
+             activePlayers.push(data.playerName) 
         console.log('active players:' , activePlayers)
+        }
+       
         // now the first person to click is activePlayers[0]
         // need to remove from the array if disconnected
         if (activePlayers.length <2) {
-             socket.broadcast.emit('waiting', {opponent: data.playerName})
+            
+        socket.broadcast.emit('waiting', {opponent: data.playerName})
         } else {
         //deal cards into 2 arrays, pass through to Browser            
             getCard(playerHand)
@@ -70,7 +77,7 @@ io.on('connection', socket => {
             getCard(dealerHand)
             console.log('4 cards dealt')
 
-            io.sockets.emit('begin', {playerHand, dealerHand} )
+            io.sockets.emit('begin', { playerHand, dealerHand, activePlayers } )
         }
     })
 
@@ -110,7 +117,10 @@ io.on('connection', socket => {
                 winner : winner
             })
         } else {
-              io.sockets.emit('stick', { playerName: data.PlayerName })
+              io.sockets.emit('stick', { 
+                  stickingPlayer: data.PlayerName, 
+                  activePlayers
+             })
         }
     })
             //     send thru playernames and scores and winnerName
@@ -124,8 +134,26 @@ io.on('connection', socket => {
         dealerHand = []
         playerHand = []
         stickingPlayers = []
-        socket.broadcast.emit('reset', {})
+        io.sockets.emit('reset', {
+            restartingPlayer : data.playerName,
+            activePlayers
+        })
     })  
+
+    socket.on('standUp', (data) => {
+        dealerHand = []
+        playerHand = []
+        stickingPlayers = []
+
+        activePlayers = activePlayers.filter((player) => {
+            return player !== data.playerName
+        })
+        console.log('filtered active players = ', activePlayers)
+        io.sockets.emit('stoodUp', { 
+            standingPlayer : data.playerName,
+            sittingPlayer : activePlayers[0]
+        })
+    })
     
    
 
