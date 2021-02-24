@@ -1,17 +1,21 @@
 const express = require('express')
 const socket = require('socket.io')
+const path = require('path')
+const http = require('http')
 
 // App setup
 const app = express()
+const server = http.createServer(app)
+
+// Static files
+app.use(express.static(path.join(__dirname, 'public')))
 
 const port = process.env.PORT || 4000
 
-const server = app.listen(port, () => {
+server.listen(port, () => {
     console.log('server running')
 })
 
-// Static files
-app.use(express.static('public'))
 
 // trying to avoid Cors blocking.  masy have been VS live server issue...?
 app.use(function (req, res, next) {
