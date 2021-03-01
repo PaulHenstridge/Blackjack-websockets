@@ -10,12 +10,21 @@
     <title>Websockets</title>
 </head>
 <body>
-    <div class="start-container">
+    <div class="start-container ">
         <!-- learn how to centre text placeholder in an input -->
         <input type="text" id='name' placeholder="        N a m e" />   
         <button id='start-btn'>Click to play!</button>
     </div>
 
+   <div class="betting-window hidden">   
+        <span id="balance"></span>
+        <div>Enter your bet: <input type="text" id="stake" value=10> </div>
+        <button id="bet" >Bet!</button>
+   </div>
+
+   <div class="bet-result"></div>
+   
+    
    
     <div id="blackjack-table">
         <div class="hand" id="opponent"></div>

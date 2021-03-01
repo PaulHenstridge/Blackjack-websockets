@@ -48,7 +48,7 @@ io.on('connection', socket => {
 
     // Deal card function
     function getCard(arr){
-        values = [2,3,4,5,6,7,8,9,10,"J10","Q10","K10","A11"];
+        values = ["2","3","4","5","6","7","8","9","10","J10","Q10","K10","A11"];
         suits = ["C", "S", "H", "D"];
 
         let valIndex = Math.floor(Math.random() * 13);
@@ -79,7 +79,7 @@ io.on('connection', socket => {
             getCard(dealerHand)
             getCard(playerHand)
             getCard(dealerHand)
-            console.log('4 cards dealt')
+            console.log('dealt hands: ', playerHand, dealerHand)
 
             io.sockets.emit('begin', { playerHand, dealerHand, activePlayers } )
         }

@@ -25,7 +25,11 @@ const twist = document.querySelector('#twist')
 const playAgain = document.querySelector('#play-again')
 const standUp = document.querySelector('#stand-up')
 const endOptions = document.querySelector('.end-options')
-
+const betWindow = document.querySelector('.betting-window')
+const balance = document.querySelector('#balance')
+const stake = document.querySelector('#stake')
+const bet = document.querySelector('#bet')
+const betResult = document.querySelector('.bet-result')
 
 
 
@@ -61,6 +65,9 @@ let playerName
 let currentScore = 0
 let playerWins = 0
 let opponentWins = 0
+let aces = 0
+let cash = 100
+let currBet
     
 start.addEventListener('click', () => {
     // hide button
@@ -86,11 +93,22 @@ socket.on('waiting', data => {
 })
 
 socket.on('begin', data => {
-    console.log(data)
+
+    console.log('data from the begin event: ', data)
+ 
     playerCards.innerHTML = ''
     opponentCards.innerHTML = ''
+    // unhide the betting window.  on clicking bet, below happens
+    balance.innerText = `Your balance is $${cash}`
+    betWindow.classList.remove('hidden')
+
+    bet.addEventListener('click', () => {
+        currBet = parseInt(stake.value)
+        setTimeout( () => { betWindow.classList.add('hidden')})
+    })
+    
     gameInfo.innerText = `Lets Play Blackjack!`
-// deal the cards
+    // deal the cards
     setTimeout(() => { dealCards(data) },1000)
     
     if (playerName === data.activePlayers[0] || playerName === data.activePlayers[1]){
@@ -103,6 +121,7 @@ socket.on('begin', data => {
         start.classList.add('hidden')
     }
     // if not an active player, hide start button
+    
 })   
 
 function createCard(cardData) {
@@ -117,7 +136,13 @@ function dealCards(data) {
     //create a div w/ class=card for first card in dealer array (transition in from above)
     //repeat for 2nd cards
 
+
     if (dealer) {
+        // counting aces
+        data.dealerHand.forEach( card => {
+            if (card[1] === 'A') aces++
+        })
+
         for (i=0;i<2;i++){          
             opponentCards.appendChild(createCard('blue_back'))
             playerCards.appendChild(createCard(data.dealerHand[i]))
@@ -126,6 +151,9 @@ function dealCards(data) {
          + parseInt(data.dealerHand[1] .replace(/\D/g, ""))
         
     } else {
+        data.playerHand.forEach( card => {
+            if (card[1] === 'A') aces++
+        })
         for (i=0;i<2;i++){
             playerCards.appendChild(createCard(data.playerHand[i]))
             opponentCards.appendChild(createCard('blue_back'))
@@ -134,6 +162,7 @@ function dealCards(data) {
         + parseInt(data.playerHand[1] .replace(/\D/g, ""))
     }
     gameInfo.innerText = `your score: ${currentScore}`
+    checkWin()
 }
 
 // stick or twist logic
@@ -158,6 +187,7 @@ twist.addEventListener('click', () => {
 socket.on('twist', data => {
     if (data.playerName === playerName) {
         let newCard = createCard(data.twistCard[0])
+        if (data.twistCard[0][1] === 'A') aces++
         playerCards.appendChild(newCard)
 
         let cardVal = parseInt(data.twistCard[0].replace(/\D/g, ""))
@@ -167,36 +197,8 @@ socket.on('twist', data => {
 
 // separate win/lose conditions to another fuction bcs will have to be called a lot
 // need to run on first deal as well as each twist
-
-        if (playerCards.length === 2 && currentScore === 21) {
-            alert('Blackjack!')
-            playerWins++
-            // game restarts with other person as 'dealer'
-            // send a gameOver event to server with playerName, score, win: true/false
-        }
-
-        if (playerCards.length === 5 && currentScore <22) {
-            alert('Five Card Trick!')
-            playerWins++
-            // game restarts with other person as 'dealer'
-            // i thik the server should be keeping track of the scores??  
-        }
-
-        if (currentScore > 21) {
-            alert ('You are bust!')
-            currentScore = 0
-            socket.emit('stick', {
-                playerName, currentScore
-            })
-            // hide stick/twist buttons
-            setTimeout( () => {
-                options.classList.add('hidden')
-            },500)
-            opponentWins++
-            // game restarts
-        }
+        checkWin()
     }
-
     if (data.playerName !== playerName) {
         let newCard = createCard('blue_back')
         opponentCards.appendChild(newCard)
@@ -239,19 +241,38 @@ socket.on('gameOver', data => {
             ${data.scores[1].playerName} scored ${data.scores[1].currentScore}.
             Winner : ${data.winner} 
             `
-        // increment overall scores  - not working currently
+        // increment overall scores  - not working currently (ties, but also other)
         data.winner === playerName ? playerWins++ : opponentWins++
         
         gameInfo.innerText = winMessage
 
-        myScore.innerText = playerWins
-        oppScore.innerText = opponentWins
+        if (data.winner === playerName) {
+            cash += currBet
+            betResult.innerHTML = `
+            <h4>YOU WON $${currBet}!  
+            Your new balance is $${cash}<h4/>
+            `
+            betResult.classList.remove('hidden')
+        } else {
+            cash -= currBet
+            betResult.innerHTML = `
+            <h4>YOU LOST $${currBet}!  
+            Your new balance is $${cash}<h4/>
+            `
+            // betResult.classList.add('bet-lose')
+            betResult.classList.remove('hidden')     
+        }
+
+    // scores disabled until working properly
+        // myScore.innerText = playerWins
+        // oppScore.innerText = opponentWins
 
     },1000)
     
 
     setTimeout( () => {
     endOptions.classList.remove('hidden')
+   
     },3000)
 
 
@@ -270,6 +291,8 @@ socket.on('gameOver', data => {
 socket.on('reset', data => {
     currentScore = 0
     endOptions.classList.add('hidden')
+    betResult.classList.add('hidden')
+    betWindow.classList.remove('hidden')
 
     // switch 'dealer' 
     if(playerName === data.activePlayers[0] || playerName === data.activePlayers[1]){
@@ -302,3 +325,64 @@ socket.on('stoodUp', data => {
 })
 
 
+
+function checkWin() {
+
+    // problem - playercards does not get added to when player twists
+        // do a card counter, or measure length of hand div?
+    /// also prob, currently playercards is sending through prev turns cards as well and 
+    // ... I DONT KNOW WHY!!
+
+    if (playerCards.length === 2 && currentScore === 21) {
+        alert('Blackjack!')
+        playerWins++
+        // game restarts with other person as 'dealer'
+        // send a gameOver event to server with playerName, score, win: true/false
+    }
+
+    //if player has an ace && score >21 { score --10}
+    for (let i = 0; i< aces; i++) {
+        if (currentScore >21){
+            aces--
+            currentScore-=10
+            gameInfo.innerText = `
+            Ace in the hole!
+            Your score is ${currentScore}
+            `
+        }
+    }
+
+    if (playerCards.length === 5 && currentScore <22) {
+        alert('Five Card Trick!')
+        playerWins++
+        // game restarts with other person as 'dealer'
+        // i thik the server should be keeping track of the scores??  
+    }
+
+    if (currentScore > 21) {
+        alert ('You are bust!')
+        currentScore = 0
+        socket.emit('stick', {
+            playerName, 
+            currentScore
+        })
+        // hide stick/twist buttons
+        setTimeout( () => {
+            options.classList.add('hidden')
+        },500)
+        opponentWins++
+        // game restarts
+    }
+}
+
+
+
+/*
+    add a reset button that kicks everyone out and resets all variables.
+    change fonts - on gameInfo at least
+    add gambling
+        place stake before cards dealt
+        if win balance += stake
+        if lose or draw balance -= stake.  <-- do with ternary 
+        if balance < 1 - you are broke!
+*/
