@@ -328,12 +328,14 @@ socket.on('stoodUp', data => {
 
 function checkWin() {
 
+    let cardCount = playerCards.childElementCount
+
     // problem - playercards does not get added to when player twists
         // do a card counter, or measure length of hand div?
     /// also prob, currently playercards is sending through prev turns cards as well and 
     // ... I DONT KNOW WHY!!
 
-    if (playerCards.length === 2 && currentScore === 21) {
+    if (cardCount === 2 && currentScore === 21) {
         alert('Blackjack!')
         playerWins++
         // game restarts with other person as 'dealer'
@@ -352,7 +354,7 @@ function checkWin() {
         }
     }
 
-    if (playerCards.length === 5 && currentScore <22) {
+    if (cardCount === 5 && currentScore <22) {
         alert('Five Card Trick!')
         playerWins++
         // game restarts with other person as 'dealer'
